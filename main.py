@@ -1,61 +1,157 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
-from ad_manager import create_ad_user
-from config import get_ou_by_sector, get_groups
+from ad_manager import create_ad_user_via_powershell as create_ad_user
+from config import get_ou_by_sector, get_groups, get_ramais_by_sector, sector_has_ramal
 
 class UserCreationApp:
     def __init__(self, root):
         self.root = root
         self.root.title("Criação de Usuário - Active Directory")
-        self.root.geometry("400x400")
+        self.root.geometry("600x600")
 
         # Labels e Entradas
         ttk.Label(root, text="Nome Completo:").pack(pady=5)
-        self.fullname_entry = ttk.Entry(root, width=40)
+        self.fullname_entry = ttk.Entry(root, width=60)
         self.fullname_entry.pack(pady=5)
 
         ttk.Label(root, text="Nome de Usuário (nome.ultimosobrenome):").pack(pady=5)
-        self.username_entry = ttk.Entry(root, width=40)
+        self.username_entry = ttk.Entry(root, width=60)
         self.username_entry.pack(pady=5)
 
         ttk.Label(root, text="Setor:").pack(pady=5)
-        self.sector_entry = ttk.Entry(root, width=40)
-        self.sector_entry.pack(pady=5)
+        # substitui entrada livre por combobox (exemplo: adicionar setores conhecidos)
+        self.sector_cb = ttk.Combobox(root, values=["Fiscal", "Outro"], state="readonly")
+        self.sector_cb.pack(pady=5)
+        self.sector_cb.bind('<<ComboboxSelected>>', self.on_sector_change)
 
         ttk.Label(root, text="Cargo:").pack(pady=5)
-        self.role_entry = ttk.Entry(root, width=40)
+        self.role_entry = ttk.Entry(root, width=60)
         self.role_entry.pack(pady=5)
 
-        # Flags para grupos
-        self.general_group_var = tk.BooleanVar()
-        self.department_group_var = tk.BooleanVar()
-        ttk.Checkbutton(root, text="Adicionar aos grupos gerais", variable=self.general_group_var).pack(pady=5)
-        ttk.Checkbutton(root, text="Adicionar aos grupos por departamento", variable=self.department_group_var).pack(pady=5)
+        # Ramal: área dinâmica. Quando setor possui ramal, mostramos radiobuttons para escolher um ramal.
+        self.ramal_frame_label = ttk.Label(root, text="")
+        self.ramal_frame_label.pack(pady=2)
+        self.ramal_frame = ttk.Frame(root)
+        self.ramal_frame.pack(pady=5, fill=tk.X)
+        self.ramal_var = tk.StringVar(value="")
+
+        # Email preview (obrigatório)
+        ttk.Label(root, text="Entrada Email (campo Email do AD) - formato: '<Setor> Serviços - Ramal <numero>':").pack(pady=5)
+        self.email_var = tk.StringVar()
+        self.email_entry = ttk.Entry(root, width=80, textvariable=self.email_var)
+        self.email_entry.pack(pady=5)
 
         # Botão de criação
         ttk.Button(root, text="Criar Usuário", command=self.create_user).pack(pady=20)
 
+    def on_sector_change(self, event=None):
+        sector = self.sector_cb.get()
+        # atualizar lista de ramais
+        for child in self.ramal_frame.winfo_children():
+            child.destroy()
+        self.ramal_var.set("")
+        if sector_has_ramal(sector):
+            self.ramal_frame_label.config(text="Selecione o ramal do setor:")
+            ramais = get_ramais_by_sector(sector)
+            for r in ramais:
+                rb = ttk.Radiobutton(self.ramal_frame, text=r, value=r, variable=self.ramal_var, command=self.update_email_preview)
+                rb.pack(side=tk.LEFT, padx=5)
+        else:
+            self.ramal_frame_label.config(text="")
+        self.update_email_preview()
+
+    def update_email_preview(self):
+        sector = self.sector_cb.get()
+        # Exemplo solicitado: 'Fiscal Serviços - Ramal 7113'
+        if sector:
+            base = f"{sector} Serviços"
+        else:
+            base = ""
+
+        if sector_has_ramal(sector):
+            ramal = self.ramal_var.get()
+            if ramal:
+                email_preview = f"{base} - Ramal {ramal}"
+            else:
+                email_preview = base
+        else:
+            email_preview = base
+
+        self.email_var.set(email_preview)
+
+    def show_details_window(self, title, content):
+        win = tk.Toplevel(self.root)
+        win.title(title)
+        win.geometry("800x500")
+        txt = tk.Text(win, wrap=tk.NONE)
+        txt.insert("1.0", content)
+        txt.config(state=tk.DISABLED)
+        txt.pack(fill=tk.BOTH, expand=True)
+        ttk.Button(win, text="Fechar", command=win.destroy).pack(pady=5)
+
     def create_user(self):
         fullname = self.fullname_entry.get()
         username = self.username_entry.get()
-        sector = self.sector_entry.get()
+        sector = self.sector_cb.get()
         role = self.role_entry.get()
-        general_group = self.general_group_var.get()
-        department_group = self.department_group_var.get()
+        # Adição aos grupos gerais e por departamento sempre como True
+        general_group = True
+        department_group = True
 
         # Validação simples
         if not fullname or not username or not sector or not role:
             messagebox.showerror("Erro", "Preencha todos os campos!")
             return
 
+        # Se setor requer ramal, garantir seleção
+        if sector_has_ramal(sector) and not self.ramal_var.get():
+            messagebox.showerror("Erro", "Selecione o ramal do setor (obrigatório).")
+            return
+
         ou = get_ou_by_sector(sector)
         groups = get_groups(sector, role, general_group, department_group)
-        success = create_ad_user(fullname, username, sector, role, general_group, department_group)
+
+        # montar email a partir do preview (campo obrigatório)
+        email = self.email_var.get().strip()
+        if not email:
+            messagebox.showerror("Erro", "O campo Email é obrigatório.")
+            return
+
+        # Chama a função que usa PowerShell
+        result = create_ad_user(fullname, username, sector, role, email)
+
+        # Interpreta resultado (pode ser dict com detalhes ou bool)
+        success = False
+        details = ""
+        if isinstance(result, dict):
+            success = result.get("success", False)
+            parts = []
+            parts.append(f"Return code: {result.get('returncode')}")
+            if result.get('stdout'):
+                parts.append("STDOUT:\n" + result.get('stdout'))
+            if result.get('stderr'):
+                parts.append("STDERR:\n" + result.get('stderr'))
+            if result.get('ps_log_tail'):
+                parts.append("PS_LOG_TAIL:\n" + result.get('ps_log_tail'))
+            if result.get('error'):
+                parts.append("ERROR_LOCAL:\n" + result.get('error'))
+            details = "\n\n".join(parts)
+        elif isinstance(result, bool):
+            success = result
+        elif result is None:
+            success = False
+        else:
+            # Fallback: show string
+            success = False
+            details = str(result)
 
         if success:
-            messagebox.showinfo("Sucesso", f"Usuário {username} criado com sucesso!")
+            if messagebox.askyesno("Sucesso", f"Usuário {username} criado com sucesso!\n\nDeseja ver os detalhes/logs ?"):
+                self.show_details_window(f"Detalhes - {username}", details)
         else:
-            messagebox.showerror("Erro", f"Falha ao criar usuário {username}.")
+            msg = f"Falha ao criar usuário {username}."
+            if messagebox.askyesno("Erro", msg + "\n\nDeseja ver os detalhes/erros ?"):
+                self.show_details_window(f"Erros - {username}", details)
 
 if __name__ == "__main__":
     root = tk.Tk()

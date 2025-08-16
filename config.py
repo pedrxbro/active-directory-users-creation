@@ -8,7 +8,7 @@ def get_ou_by_sector(sector):
 # Grupos gerais para todos os colaboradores
 general_groups = [
     "S_LIST", "S_LIST_DPTOS", "S_LIST_FORMS", "S_LIST_DECLARACOES", "S_LIST_SOCIETARIO", "S_LIST_DP", "S_LIST_COLETA", "S_LIST_ARQUIVO",
-    "BLOQUEIA_CERTIFICADOS", "BLOQUEIA_CONTROLE_CERTIFICADOS", "BLOQUEIA_GERAL_CONT", "BLOQUEIA_HORARIO", "DENY_MSTSC_", "G_U_SPARK",
+    "BLOQUEIA_CERTIFICADOS", "BLOQUEIA_CONTROLE_CERTIFICADO", "BLOQUEIA_GERAL_CONT", "BLOQUEIA_HORARIO", "DENY_MSTSC", "G_U_SPARK",
     "H_LIST", "H_LIST_INFORMATIVO", "Q_RODERJAN"
 ]
 
@@ -16,8 +16,8 @@ general_groups = [
 groups_by_sector = {
     "Fiscal": {
         "Operacional": general_groups + [
-            "S_LIST_EMPRESAS", "S_LIST", "EMP_TRANSF", "S_OPE_MONITORADA", "S_READ_FORMS", "S_READ_DECLARACOES", "S_LIST_FISCAL",
-            "S_FIS_OPERACIONAL", "S_FIS_CONSULTA_EXT", "S_BLOCK_EMPRESAS_GRUPO"
+            "S_LIST_EMPRESAS", "S_LIST", "S_LIST_EMPRESAS_TRANSFERIDAS", "S_OPE_MONITORADA", "S_READ_FORMS", "S_READ_DECLARACOES", "S_LIST_FISCAL",
+            "S_FIS_OPERACIONAL", "S_FIS_CONSULTA_EXT", "S_BLOCK_EMPRESAS_GRUPO", "Dep_Fiscal"
         ]
     },
     # Adicione outros setores/cargos conforme necessário
@@ -32,3 +32,43 @@ def get_groups(sector, role, general=True, department=True):
         role_groups = sector_groups.get(role, [])
         groups.extend(role_groups)
     return groups
+
+group_ou_paths = [
+    "OU=Grupos Dptos,OU=Roderjan Servicos,OU=Roderjan Group,DC=roderjan,DC=com,DC=br",
+    "OU=Grupos List Dptos,OU=Roderjan Servicos,OU=Roderjan Group,DC=roderjan,DC=com,DC=br",
+    "OU=Grupos List Servicos,OU=Roderjan Servicos,OU=Roderjan Group,DC=roderjan,DC=com,DC=br",
+    "OU=Grupos Coord Servicos,OU=Roderjan Servicos,OU=Roderjan Group,DC=roderjan,DC=com,DC=br",
+    "OU=Grupos List Holding,OU=Roderjan Holding,OU=Roderjan Group,DC=roderjan,DC=com,DC=br",
+    "OU=WebApp Group,OU=Roderjan Holding,OU=Roderjan Group,DC=roderjan,DC=com,DC=br",
+    "OU=OpenfireChat,OU=Roderjan Group,DC=roderjan,DC=com,DC=br",
+    "OU=Grupos,OU=Roderjan Servicos,OU=Roderjan Group,DC=roderjan,DC=com,DC=br"
+]
+
+def find_group_dn(group_name):
+    """
+    Retorna o DN do grupo buscando nas OUs conhecidas.
+    """
+    for ou_path in group_ou_paths:
+        dn = f"CN={group_name},{ou_path}"
+        # Aqui pode ser implementada uma verificação real no AD
+        # Para simplificação, retorna o primeiro DN gerado
+        return dn
+    return None
+
+# Ramais por setor (números de ramal como strings)
+ramais_by_sector = {
+    "Fiscal": ["7110", "7113"],
+    # Adicione outros setores e seus ramais conforme necessário
+}
+
+def get_ramais_by_sector(sector):
+    return ramais_by_sector.get(sector, [])
+
+# Indica se o setor possui ramais (flag para habilitar seleção de ramal na GUI)
+ramal_flag_by_sector = {
+    "Fiscal": True,
+    # Adicione outros setores e se possuem ramais
+}
+
+def sector_has_ramal(sector):
+    return ramal_flag_by_sector.get(sector, False)

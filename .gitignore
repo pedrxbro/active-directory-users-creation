@@ -1,0 +1,55 @@
+# Virtual environment (project-local)
+.venv/
+venv/
+
+# PyInstaller
+dist/
+build/
+*.spec
+
+# Executables
+*.exe
+*.dll
+*.pyd
+
+# Logs and runtime files
+ad_user_creation_logs/
+*.log
+*.txt
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Distribution / packaging
+*.egg-info/
+*.egg
+pip-wheel-metadata/
+
+# Test / IDE
+.pytest_cache/
+.mypy_cache/
+.ipynb_checkpoints/
+
+# Env files
+.env
+.env.*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editors
+.vscode/
+.idea/
+
+# Coverage
+coverage.xml
+htmlcov/
+
+# Local build artifacts
+build/
+
+# Ignore any local extracted MEI files used by onefile during runtime
+_MEI*/
