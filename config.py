@@ -3,7 +3,15 @@
 # OU base para colaboradores
 def get_ou_by_sector(sector):
     base_ou = "OU=Setores,OU=Roderjan Servicos,OU=Roderjan Group,DC=roderjan,DC=com,DC=br"
-    return f"OU={sector},{base_ou}"
+    # Mapear nomes exibidos para o nome real da OU quando houver diferença (ex.: acentos)
+    sector_ou_map = {
+        "Contábil": "Contabil",
+        "Contabil": "Contabil",
+    }
+    ou_name = sector_ou_map.get(sector, sector)
+    # Sanitização básica: remover vírgulas e espaços extras
+    ou_name = str(ou_name).replace(",", "").strip()
+    return f"OU={ou_name},{base_ou}"
 
 # Grupos gerais para todos os colaboradores
 general_groups = [
@@ -18,6 +26,24 @@ groups_by_sector = {
         "Operacional": general_groups + [
             "S_LIST_EMPRESAS", "S_LIST", "S_LIST_EMPRESAS_TRANSFERIDAS", "S_OPE_MONITORADA", "S_READ_FORMS", "S_READ_DECLARACOES", "S_LIST_FISCAL",
             "S_FIS_OPERACIONAL", "S_FIS_CONSULTA_EXT", "S_BLOCK_EMPRESAS_GRUPO", "Dep_Fiscal"
+        ]
+    },
+    "Contábil": {
+        "Auxiliar": general_groups + [
+            "S_LIST_EMPRESAS", "S_LIST_EMPRESAS_TRANSFERIDAS", "S_OPE_MONITORADA", "S_READ_FORMS", "S_READ_DECLARACOES",
+            "S_LIST_FISCAL", "S_LIST_CONTABIL", "S_CTB_OPERACIONAL", "S_CTB_CONSULTA_EXT", "S_OPE_VISAO", "S_BLOCK_EMPRESAS_GRUPO", "Dep_Contabil"
+        ],
+        "Assistente": general_groups + [
+            "S_LIST_EMPRESAS", "S_LIST_EMPRESAS_TRANSFERIDAS", "S_OPE_MONITORADA", "S_READ_FORMS", "S_READ_DECLARACOES",
+            "S_LIST_FISCAL", "S_LIST_CONTABIL", "S_CTB_OPERACIONAL", "S_CTB_CONSULTA_EXT", "S_OPE_VISAO", "S_BLOCK_EMPRESAS_GRUPO", "Dep_Contabil"
+        ],
+        "Analista": general_groups + [
+            "S_LIST_EMPRESAS", "S_LIST_EMPRESAS_TRANSFERIDAS", "S_OPE_MONITORADA", "S_READ_FORMS", "S_READ_DECLARACOES",
+            "S_LIST_FISCAL", "S_LIST_CONTABIL", "S_CTB_ANALISTA", "S_CTB_CONSULTA_EXT", "S_OPE_VISAO", "S_BLOCK_EMPRESAS_GRUPO", "Dep_Contabil"
+        ],
+        "Supervisor": general_groups + [
+            "S_LIST_EMPRESAS", "S_LIST_EMPRESAS_TRANSFERIDAS", "S_OPE_MONITORADA", "S_READ_FORMS", "S_READ_DECLARACOES", 
+            "S_LIST_FISCAL", "S_LIST_CONTABIL", "S_CTB_SUPERVISAO", "S_CTB_CONSULTA_EXT", "S_OPE_VISAO", "S_BLOCK_EMPRESAS_GRUPO", "Dep_Contabil"
         ]
     },
     # Adicione outros setores/cargos conforme necessário
@@ -58,6 +84,9 @@ def find_group_dn(group_name):
 # Ramais por setor (números de ramal como strings)
 ramais_by_sector = {
     "Fiscal": ["7110", "7113"],
+    "Contábil": ["7108", "7105"],
+    # Variantes sem acento para compatibilidade com a GUI
+    "Contabil": ["7108", "7105"],
     # Adicione outros setores e seus ramais conforme necessário
 }
 
@@ -67,6 +96,9 @@ def get_ramais_by_sector(sector):
 # Indica se o setor possui ramais (flag para habilitar seleção de ramal na GUI)
 ramal_flag_by_sector = {
     "Fiscal": True,
+    "Contábil": True,
+    # Variante sem acento
+    "Contabil": True,
     # Adicione outros setores e se possuem ramais
 }
 

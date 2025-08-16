@@ -20,7 +20,7 @@ class UserCreationApp:
 
         ttk.Label(root, text="Setor:").pack(pady=5)
         # substitui entrada livre por combobox (exemplo: adicionar setores conhecidos)
-        self.sector_cb = ttk.Combobox(root, values=["Fiscal", "Outro"], state="readonly")
+        self.sector_cb = ttk.Combobox(root, values=["Fiscal", "Contábil"], state="readonly")
         self.sector_cb.pack(pady=5)
         self.sector_cb.bind('<<ComboboxSelected>>', self.on_sector_change)
 
