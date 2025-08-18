@@ -32,10 +32,10 @@ Logs são gerados e retornados à interface
 
 ## 🚀 Como utilizar
 
-1. **Executar o programa** (versão `.exe` gerada via PyInstaller ou via Python):
-   ```powershell
-   python main.py
-   ```
+1. **Executar o programa**:
+   Após gerar o executável (.exe) com o PyInstaller, é necessário abrir o programa diretamente no servidor de Active Directory (srv-ad01), pois:
+   O script PowerShell (create_user.ps1) depende do módulo ActiveDirectory, que só está disponível no servidor.
+   A execução exige permissões administrativas no AD.
 
 2. **Preencher os dados na interface gráfica:**
    - Nome completo
