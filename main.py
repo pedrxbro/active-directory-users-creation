@@ -1,7 +1,7 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
 from ad_manager import create_ad_user_via_powershell as create_ad_user
-from config import get_ou_by_sector, get_groups, get_ramais_by_sector
+from config import get_ramais_by_sector
 
 class UserCreationApp:
     def __init__(self, root):
@@ -25,8 +25,9 @@ class UserCreationApp:
         self.sector_cb.bind('<<ComboboxSelected>>', self.on_sector_change)
 
         ttk.Label(root, text="Cargo:").pack(pady=5)
-        self.role_entry = ttk.Entry(root, width=60)
-        self.role_entry.pack(pady=5)
+        self.role_cb = ttk.Combobox(root, values=["Auxiliar", "Assistente", "Analista"], state="readonly")
+        self.role_cb.pack(pady=5)
+        self.role_cb.bind('<<ComboboxSelected>>', self.update_email_preview)
 
         # Ramal: área dinâmica. Sempre mostra opções de ramal
         self.ramal_frame_label = ttk.Label(root, text="Selecione o ramal do setor:")
@@ -35,8 +36,8 @@ class UserCreationApp:
         self.ramal_frame.pack(pady=5, fill=tk.X)
         self.ramal_var = tk.StringVar(value="")
 
-        # Email preview (obrigatório)
-        ttk.Label(root, text="Entrada Email (campo Email do AD) - formato: '<Setor> Serviços - Ramal <numero>':").pack(pady=5)
+        # Campo email (ramal)
+        ttk.Label(root, text="Ramal: '<Setor> Serviços - Ramal <numero>':").pack(pady=5)
         self.email_var = tk.StringVar()
         self.email_entry = ttk.Entry(root, width=80, textvariable=self.email_var)
         self.email_entry.pack(pady=5)
@@ -84,10 +85,7 @@ class UserCreationApp:
         fullname = self.fullname_entry.get()
         username = self.username_entry.get()
         sector = self.sector_cb.get()
-        role = self.role_entry.get()
-        # Adição aos grupos gerais e por departamento sempre como True
-        general_group = True
-        department_group = True
+        role = self.role_cb.get()
 
         # Validação simples
         if not fullname or not username or not sector or not role:
@@ -99,9 +97,6 @@ class UserCreationApp:
             messagebox.showerror("Erro", "Selecione o ramal do setor (obrigatório).")
             return
 
-        ou = get_ou_by_sector(sector)
-        groups = get_groups(sector, role)
-
         # montar email a partir do preview (campo obrigatório)
         email = self.email_var.get().strip()
         if not email:
@@ -111,7 +106,7 @@ class UserCreationApp:
         # Chama a função que usa PowerShell
         result = create_ad_user(fullname, username, sector, role, email)
 
-        # Interpreta resultado (pode ser dict com detalhes ou bool)
+        # Interpreta resultado
         success = False
         details = ""
         if isinstance(result, dict):

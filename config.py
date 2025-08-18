@@ -23,7 +23,7 @@ general_groups = [
 # Grupos por setor/cargo
 groups_by_sector = {
     "Fiscal": {
-        "Operacional": general_groups + [
+        "Auxiliar": general_groups + [
             "S_LIST_EMPRESAS", "S_LIST", "S_LIST_EMPRESAS_TRANSFERIDAS", "S_OPE_MONITORADA", "S_READ_FORMS", "S_READ_DECLARACOES", "S_LIST_FISCAL",
             "S_FIS_OPERACIONAL", "S_FIS_CONSULTA_EXT", "S_BLOCK_EMPRESAS_GRUPO", "Dep_Fiscal"
         ]
@@ -46,10 +46,13 @@ groups_by_sector = {
             "S_LIST_FISCAL", "S_LIST_CONTABIL", "S_CTB_SUPERVISAO", "S_CTB_CONSULTA_EXT", "S_OPE_VISAO", "S_BLOCK_EMPRESAS_GRUPO", "Dep_Contabil"
         ]
     },
-    # Adicione outros setores/cargos conforme necessário
+    # Adicionar outros setores/cargos
 }
 
 def get_groups(sector, role):
+    # Para o setor Fiscal, todos os cargos são tratados como 'Auxiliar'
+    if sector == "Fiscal" and role in ["Analista", "Assistente", "Auxiliar"]:
+        role = "Auxiliar"
     groups = []
     groups.extend(general_groups)
     sector_groups = groups_by_sector.get(sector, {})
@@ -69,12 +72,12 @@ group_ou_paths = [
 ]
 
 
-# Ramais por setor (números de ramal como strings)
+# Ramais por setor
 ramais_by_sector = {
     "Fiscal": ["7110", "7113"],
     "Contábil": ["7108", "7105"],
     "Contabil": ["7108", "7105"],
-    # Adicione outros setores e seus ramais conforme necessário
+    # Adicionar mais
 }
 
 def get_ramais_by_sector(sector):

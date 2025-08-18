@@ -15,7 +15,6 @@ build/
 # Logs and runtime files
 ad_user_creation_logs/
 *.log
-*.txt
 
 # Python
 __pycache__/
