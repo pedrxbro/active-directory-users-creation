@@ -24,7 +24,6 @@ Logs são gerados e retornados à interface
 ├── config.py            # Configurações de OUs, grupos e ramais
 ├── logger.py            # Registro de logs de execução
 ├── create_user.ps1      # Script PowerShell que cria o usuário no AD
-├── README_PyInstaller.md# Instruções para gerar o executável
 └── .gitignore           # Arquivos ignorados pelo Git
 ```
 
