@@ -1,7 +1,7 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
 from ad_manager import create_ad_user_via_powershell as create_ad_user
-from config import get_ou_by_sector, get_groups, get_ramais_by_sector, sector_has_ramal
+from config import get_ou_by_sector, get_groups, get_ramais_by_sector
 
 class UserCreationApp:
     def __init__(self, root):
@@ -28,8 +28,8 @@ class UserCreationApp:
         self.role_entry = ttk.Entry(root, width=60)
         self.role_entry.pack(pady=5)
 
-        # Ramal: área dinâmica. Quando setor possui ramal, mostramos radiobuttons para escolher um ramal.
-        self.ramal_frame_label = ttk.Label(root, text="")
+        # Ramal: área dinâmica. Sempre mostra opções de ramal
+        self.ramal_frame_label = ttk.Label(root, text="Selecione o ramal do setor:")
         self.ramal_frame_label.pack(pady=2)
         self.ramal_frame = ttk.Frame(root)
         self.ramal_frame.pack(pady=5, fill=tk.X)
@@ -50,33 +50,24 @@ class UserCreationApp:
         for child in self.ramal_frame.winfo_children():
             child.destroy()
         self.ramal_var.set("")
-        if sector_has_ramal(sector):
-            self.ramal_frame_label.config(text="Selecione o ramal do setor:")
-            ramais = get_ramais_by_sector(sector)
-            for r in ramais:
-                rb = ttk.Radiobutton(self.ramal_frame, text=r, value=r, variable=self.ramal_var, command=self.update_email_preview)
-                rb.pack(side=tk.LEFT, padx=5)
-        else:
-            self.ramal_frame_label.config(text="")
+        self.ramal_frame_label.config(text="Selecione o ramal do setor:")
+        ramais = get_ramais_by_sector(sector)
+        for r in ramais:
+            rb = ttk.Radiobutton(self.ramal_frame, text=r, value=r, variable=self.ramal_var, command=self.update_email_preview)
+            rb.pack(side=tk.LEFT, padx=5)
         self.update_email_preview()
 
     def update_email_preview(self):
         sector = self.sector_cb.get()
-        # Exemplo solicitado: 'Fiscal Serviços - Ramal 7113'
         if sector:
             base = f"{sector} Serviços"
         else:
             base = ""
-
-        if sector_has_ramal(sector):
-            ramal = self.ramal_var.get()
-            if ramal:
-                email_preview = f"{base} - Ramal {ramal}"
-            else:
-                email_preview = base
+        ramal = self.ramal_var.get()
+        if ramal:
+            email_preview = f"{base} - Ramal {ramal}"
         else:
             email_preview = base
-
         self.email_var.set(email_preview)
 
     def show_details_window(self, title, content):
@@ -103,13 +94,13 @@ class UserCreationApp:
             messagebox.showerror("Erro", "Preencha todos os campos!")
             return
 
-        # Se setor requer ramal, garantir seleção
-        if sector_has_ramal(sector) and not self.ramal_var.get():
+        # Sempre exige seleção de ramal
+        if not self.ramal_var.get():
             messagebox.showerror("Erro", "Selecione o ramal do setor (obrigatório).")
             return
 
         ou = get_ou_by_sector(sector)
-        groups = get_groups(sector, role, general_group, department_group)
+        groups = get_groups(sector, role)
 
         # montar email a partir do preview (campo obrigatório)
         email = self.email_var.get().strip()
@@ -141,7 +132,6 @@ class UserCreationApp:
         elif result is None:
             success = False
         else:
-            # Fallback: show string
             success = False
             details = str(result)
 

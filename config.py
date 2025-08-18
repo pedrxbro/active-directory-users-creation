@@ -49,14 +49,12 @@ groups_by_sector = {
     # Adicione outros setores/cargos conforme necessário
 }
 
-def get_groups(sector, role, general=True, department=True):
+def get_groups(sector, role):
     groups = []
-    if general:
-        groups.extend(general_groups)
-    if department:
-        sector_groups = groups_by_sector.get(sector, {})
-        role_groups = sector_groups.get(role, [])
-        groups.extend(role_groups)
+    groups.extend(general_groups)
+    sector_groups = groups_by_sector.get(sector, {})
+    role_groups = sector_groups.get(role, [])
+    groups.extend(role_groups)
     return groups
 
 group_ou_paths = [
@@ -70,37 +68,14 @@ group_ou_paths = [
     "OU=Grupos,OU=Roderjan Servicos,OU=Roderjan Group,DC=roderjan,DC=com,DC=br"
 ]
 
-def find_group_dn(group_name):
-    """
-    Retorna o DN do grupo buscando nas OUs conhecidas.
-    """
-    for ou_path in group_ou_paths:
-        dn = f"CN={group_name},{ou_path}"
-        # Aqui pode ser implementada uma verificação real no AD
-        # Para simplificação, retorna o primeiro DN gerado
-        return dn
-    return None
 
 # Ramais por setor (números de ramal como strings)
 ramais_by_sector = {
     "Fiscal": ["7110", "7113"],
     "Contábil": ["7108", "7105"],
-    # Variantes sem acento para compatibilidade com a GUI
     "Contabil": ["7108", "7105"],
     # Adicione outros setores e seus ramais conforme necessário
 }
 
 def get_ramais_by_sector(sector):
     return ramais_by_sector.get(sector, [])
-
-# Indica se o setor possui ramais (flag para habilitar seleção de ramal na GUI)
-ramal_flag_by_sector = {
-    "Fiscal": True,
-    "Contábil": True,
-    # Variante sem acento
-    "Contabil": True,
-    # Adicione outros setores e se possuem ramais
-}
-
-def sector_has_ramal(sector):
-    return ramal_flag_by_sector.get(sector, False)
