@@ -63,6 +63,7 @@ def create_ad_user_via_powershell(fullname, username, sector, role, email):
             "-OU", ou_dn,
             "-Title", role,
             "-Groups", groups_str
+            
         ]
 
         cmd.extend(["-Email", email])
