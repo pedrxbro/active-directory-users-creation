@@ -1,6 +1,6 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
-from ad_manager import create_ad_user_via_powershell as create_ad_user
+from ad_manager import create_ad_user
 from config import get_ramais_by_sector
 
 class UserCreationApp:
@@ -25,7 +25,7 @@ class UserCreationApp:
         self.sector_cb.bind('<<ComboboxSelected>>', self.on_sector_change)
 
         ttk.Label(root, text="Cargo:").pack(pady=5)
-        self.role_cb = ttk.Combobox(root, values=["Auxiliar", "Assistente", "Analista", "Coordenação"], state="readonly")
+        self.role_cb = ttk.Combobox(root, values=["Auxiliar", "Assistente", "Analista", "Coordenador"], state="readonly")
         self.role_cb.pack(pady=5)
         self.role_cb.bind('<<ComboboxSelected>>', self.update_email_preview)
 

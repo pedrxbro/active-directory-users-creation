@@ -42,7 +42,7 @@ Logs são gerados e retornados à interface
    - Setor
    - Cargo
    - Selecionar ramal
-   - E-mail (obrigatório)
+   - E-mail
 
 3. Clicar em **“Criar Usuário”**.  
    O sistema validará os dados, chamará o **PowerShell** e exibirá logs/detalhes de sucesso ou erro.
@@ -193,4 +193,4 @@ python -m PyInstaller --onefile --noconsole --noupx --add-data "create_user.ps1:
 ## 📌 Observações importantes
 - O **campo e-mail é obrigatório** para criação.  
 - Caso algum grupo definido em `config.py` não exista, o PowerShell **pula esse grupo** e registra no log.  
-- Sempre que houver alterações no código, **gere novamente o `.exe` com PyInstaller**.  
+- Sempre que houver alterações no código, **gere novamente o `.exe` com PyInstaller**. 

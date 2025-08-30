@@ -18,17 +18,7 @@ def tail_file(path, max_lines=200):
     except Exception as e:
         return f"Não foi possível ler o arquivo de log {path}: {e}"
 
-
-def create_ad_user(fullname, username, sector, role, email=None):
-    """
-    Wrapper para manter compatibilidade: redireciona para create_ad_user_via_powershell.
-    """
-    if email is None:
-        raise ValueError("O parâmetro 'email' é obrigatório para criação de usuário via PowerShell.")
-    return create_ad_user_via_powershell(fullname, username, sector, role, email)
-
-
-def create_ad_user_via_powershell(fullname, username, sector, role, email):
+def create_ad_user(fullname, username, sector, role, email):
     """
     Invoca o script PowerShell `create_user.ps1` (no mesmo diretório deste arquivo) para criar o usuário no AD.
     Suporta execução quando empacotado com PyInstaller (--onefile).
@@ -63,7 +53,6 @@ def create_ad_user_via_powershell(fullname, username, sector, role, email):
             "-OU", ou_dn,
             "-Title", role,
             "-Groups", groups_str
-            
         ]
 
         cmd.extend(["-Email", email])

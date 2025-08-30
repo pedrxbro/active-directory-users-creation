@@ -134,10 +134,18 @@ def get_groups(sector, role):
     if sector != "Contábil" and role in ["Analista", "Assistente", "Auxiliar"]:
         role = "Operacional"
     groups = []
-    groups.extend(general_groups)
-    sector_groups = groups_by_sector.get(sector, {})
-    role_groups = sector_groups.get(role, [])
-    groups.extend(role_groups)
+    if role == "Coordenador":
+        groups.extend(general_groups)
+        groups.extend(general_groups_coordinator)
+        # Adiciona grupos específicos do setor/cargo, se houver
+        sector_groups = groups_by_sector.get(sector, {})
+        role_groups = sector_groups.get(role, [])
+        groups.extend(role_groups)
+    else:
+        groups.extend(general_groups)
+        sector_groups = groups_by_sector.get(sector, {})
+        role_groups = sector_groups.get(role, [])
+        groups.extend(role_groups)
     return groups
 
 group_ou_paths = [
